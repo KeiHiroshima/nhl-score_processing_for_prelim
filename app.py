@@ -4,7 +4,7 @@ import streamlit as st
 
 from main import process, top36
 from makegroup import split_random
-from outputtext import outputtext
+from outputtext import get_zip, outputtext
 
 # グローバル変数
 uploaded_files = []
@@ -27,7 +27,7 @@ st.title("Processing 1st prelim and grouping to 8")
 # input total entry number to session state
 st.write("### Input total entry number")
 st.session_state["num_entry"] = st.number_input(
-    "Total entry number", min_value=0, value=200
+    "Total entry number", min_value=0, value=254
 )
 
 st.write("## Upload files to start ")
@@ -105,29 +105,18 @@ st.write("## Grouping to 8 groups")
 # グループ分けの実行
 if st.button("Random 8 groups"):
     groups = split_random(players_top5to36, random_seed)
-    # display groups
-    for i, group in enumerate(groups):
-        st.write(f"### Group {i + 1}")
-        st.write(group)
+
+    # get_zip(groups)
+    output_list = outputtext(groups, st.session_state["top4"])
 
     # 履歴に追加
     history = st.session_state.get("history", [])
-    history.append(groups)
+    history.append(output_list)
 
     # save to session state
-    st.session_state["groups"] = groups
+    # st.session_state["groups"] = groups
     st.session_state["history"] = history
 
-# output files
-if st.button("Looks good to output?"):
-    if not st.session_state["groups"]:
-        st.error("Do grouping first.")
-        st.stop()
-
-    # load groups from session state
-    groups = st.session_state["groups"]
-    # get_zip(groups)
-    outputtext(groups, st.session_state["top4"])
 
 st.write("### Logs")
 
@@ -144,5 +133,5 @@ if len(st.session_state["history"]) > 1:
 
     if st.button("Looks good to this output?"):
         groups = history[index]
-        # get_zip(groups)
-        outputtext(groups, st.session_state["top4"])
+        get_zip(groups)
+        # outputtext(groups, st.session_state["top4"])
