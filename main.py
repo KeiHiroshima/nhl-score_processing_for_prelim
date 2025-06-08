@@ -8,6 +8,7 @@ import streamlit as st
 
 def readcsv(folder_path, file_names):
     exp = ".csv"
+
     for i, file_name in enumerate(file_names):
         file_name += exp
         file_path = os.path.join(folder_path, file_name)

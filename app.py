@@ -1,5 +1,3 @@
-# app.py
-
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -109,7 +107,7 @@ if st.button("Random 8 groups"):
     groups = split_random(players_top5to36, random_seed)
     # display groups
     for i, group in enumerate(groups):
-        st.write(f"### Group {i+1}")
+        st.write(f"### Group {i + 1}")
         st.write(group)
 
     # 履歴に追加

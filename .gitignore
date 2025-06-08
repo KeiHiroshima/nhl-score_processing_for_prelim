@@ -1,3 +1,4 @@
+*.txt
 .idea/
 .DS_Store
 .Rproj.user

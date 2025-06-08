@@ -6,17 +6,11 @@ from main import get_zip
 
 
 def outputtext(groups, top4):
-    # pre-process on top4
     # audition_number, name, represent -> audition_number+'space'+name/represent
-    top4_processed = []
-    for i, onedata in enumerate(top4.values.tolist()):
-        # print(onedata)
-        one_processed = f"{int(onedata[0])} {onedata[1]}/{onedata[2]}"
-        top4_processed.append(one_processed)
-
-    print("### Top4")
-    for i, top4 in enumerate(top4_processed):
-        print(top4)
+    top4_processed = [
+        f"{int(onedata[0])} {onedata[1]}/{onedata[2]}"
+        for onedata in top4.values.tolist()
+    ]
 
     # concat top4 and guests
     top4_guests_list = []
