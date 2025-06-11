@@ -135,7 +135,7 @@ def get_zip(groups):
         with zipfile.ZipFile(buffer, "w") as z:
             ""  # output in each group
             for i, group in enumerate(groups):
-                group = group.drop(columns=1)  # drop " " column
+                group = group.drop(columns="space")  # drop " " column
                 group_csv = group.to_csv(index=False, header=False, sep=" ")
 
                 """
@@ -150,14 +150,14 @@ def get_zip(groups):
                 # z.writestr(f"group_{i+1}.txt", open(f"group_{i+1}.txt").read())
                 """
 
-                z.writestr(f"group_{group_names[i]}.csv", group_csv)
+                z.writestr(f"group_{group_names[i]}.txt", group_csv)
 
             # output altogether
             with open("groups.txt", "w") as f_all:
                 for i, group in enumerate(groups):
                     f_all.write(f"Group {group_names[i]}\n")
 
-                    group = group.drop(columns=1).values.tolist()
+                    group = group.drop(columns="space").values.tolist()
                     # group_txt = group.to_string(index=False, header=False)
                     # format "audition_number name represent"
                     for i, row in enumerate(group):
@@ -172,7 +172,6 @@ def get_zip(groups):
 
         buffer.seek(0)
 
-        # download button
         st.download_button(
             label="Download groups csv files",
             data=buffer.getvalue(),
@@ -183,9 +182,6 @@ def get_zip(groups):
 
 if __name__ == "__main__":
     folder_path = "/Users/te_keiero/PycharmProjects/NHL-score-prelim"
-
-    # file_names = ['entry_list', 'judge-1.csv', 'judge-2.csv', 'judge-3.csv', 'judge-4.csv']
-    # file_names = ['judge-1.csv', 'judge-2.csv', 'judge-3.csv', 'judge-4.csv']
     judge_names = ["Judge1", "Judge2", "Judge3", "Judge4"]
 
     scores = readcsv(folder_path, judge_names)

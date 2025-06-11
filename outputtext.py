@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -12,22 +11,35 @@ def outputtext(groups, top4):
         for onedata in top4.values.tolist()
     ]
 
+    judge_names = ["KAZUKIYO", "KEIN", "HIRO", "SU→"]
+    guest_names = ["Mei/タイ", "Mei/大阪", "Juaena", "SAKI"]
+
     # concat top4 and guests
     top4_guests_list = []
-    top4_guests = np.array(
-        [
-            [["JUDGE:", " ", "KAZUKIYO"], ["GUEST:", " ", top4_processed[2]]],
-            [["JUDGE:", " ", "KEIN"], ["GUEST:", " ", "Mei/タイ"]],
-            [["JUDGE:", " ", "HIRO"], ["GUEST:", " ", top4_processed[1]]],
-            [["JUDGE:", " ", "SU→"], ["GUEST:", " ", "MEI/大阪"]],
-            [["JUDGE:", " ", "KEIN"], ["GUEST:", " ", top4_processed[3]]],
-            [["JUDGE:", " ", "KAZUKIYO"], ["GUEST:", " ", "SAKI"]],
-            [["JUDGE:", " ", "SU→"], ["GUEST:", " ", top4_processed[0]]],
-            [["JUDGE:", " ", "HIRO"], ["GUEST:", " ", "Juaena"]],
-        ]
-    )
-    for i in range(top4_guests.shape[0]):
-        top4_guests_list.append(pd.DataFrame(top4_guests[i]))
+
+    num_groups = 8
+    guest_index, top4_index = 0, 0
+    for i in range(num_groups):
+        if i >= len(judge_names):
+            judge_index = i - len(judge_names)
+        else:
+            judge_index = i
+
+        if i % 2 == 0:  # pick guest
+            guest_row = ["GUEST:", " ", guest_names[guest_index]]
+            guest_index += 1
+        else:
+            guest_row = ["GUEST:", " ", top4_processed[top4_index]]
+            top4_index += 1
+
+        top4_guests_list.append(
+            pd.DataFrame(
+                [
+                    ["JUDGE:", " ", judge_names[judge_index]],
+                    guest_row,
+                ]
+            )
+        )
 
     # pre-process on groups
     # audition_number, name, represent -> audition_number+"space"+name/represent
@@ -51,7 +63,10 @@ def outputtext(groups, top4):
     # concat top4s and groups
     output_list = []
     for i, group in enumerate(group_list):
-        one_output = pd.concat((top4_guests_list[i], group), axis=0)
+        one_output = pd.concat((top4_guests_list[i], group), axis=0).reset_index(
+            drop=True
+        )
+        one_output.columns = ["audition_number", "space", "name/represent"]
         output_list.append(one_output)
 
     # display text in capyable format
@@ -60,29 +75,13 @@ def outputtext(groups, top4):
 
     for i, output in enumerate(output_list):
         # drop " " column
-        output = output.drop(columns=1)
+        output = output.drop(columns="space")
         st.write(f"#### Group {group_names[i]}")
         st.write(output)
 
-    """
-    # display output_list in txt format
-    output_list_txt = {}
-    for i, output in enumerate(output_list):
-        # drop " " column
-        output = output.drop(columns=1)
-
-        # add to output_list_txt, key: group name, value: output in txt format
-        output_list_txt[group_names[i]] = output.to_string(index=False, header=False)
-
-    st.write("### Output in txt format")
-    st.write(output_list_txt)
-    for key, value in output_list_txt.items():
-        st.write(f"#### Group {key}")
-        st.write(value)"""
-
     get_zip(output_list)
 
-    return
+    return output_list
 
 
 def main():
