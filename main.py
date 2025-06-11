@@ -150,7 +150,7 @@ def get_zip(groups):
                 # z.writestr(f"group_{i+1}.txt", open(f"group_{i+1}.txt").read())
                 """
 
-                z.writestr(f"group_{group_names[i]}.csv", group_csv)
+                z.writestr(f"group_{group_names[i]}.txt", group_csv)
 
             # output altogether
             with open("groups.txt", "w") as f_all:
