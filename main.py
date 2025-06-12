@@ -136,21 +136,31 @@ def get_zip(groups):
             ""  # output in each group
             for i, group in enumerate(groups):
                 group = group.drop(columns="space")  # drop " " column
-                group_csv = group.to_csv(index=False, header=False, sep=" ")
 
-                """
-                with open(f"group_{i+1}.txt", "w") as f:
-                    for i, row in enumerate(group):
-                        if i > 1 and int(row[0]) < 100:
-                            f.write(f"{row[0]}  {row[1]}\n")
-                        else:
-                            f.write(f"{row[0]} {row[1]}\n")
+                with open(f"group_{group_names[i]}.txt", "w") as f:
+                    # for i, row in enumerate(group):
+                    for index in range(group.shape[0]):
+                        row = group.iloc[index]
 
-                # z.write(f"group_{i+1}.txt")
-                # z.writestr(f"group_{i+1}.txt", open(f"group_{i+1}.txt").read())
-                """
+                        if (
+                            type(row["audition_number"]) is not int
+                            or row["audition_number"] > 99
+                        ):
+                            f.write(
+                                f"{row['audition_number']} {row['name/represent']}\n"
+                            )
+                        elif row["audition_number"] < 10:
+                            f.write(
+                                f"{row['audition_number']}   {row['name/represent']}\n"
+                            )
+                        elif (
+                            row["audition_number"] > 9 and row["audition_number"] < 100
+                        ):
+                            f.write(
+                                f"{row['audition_number']}  {row['name/represent']}\n"
+                            )
 
-                z.writestr(f"group_{group_names[i]}.txt", group_csv)
+                z.write(f"group_{group_names[i]}.txt")
 
             # output altogether
             with open("groups.txt", "w") as f_all:
