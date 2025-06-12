@@ -5,14 +5,15 @@ from main import get_zip
 
 
 def outputtext(groups, top4):
+    sep_str = " "
     # audition_number, name, represent -> audition_number+'space'+name/represent
     top4_processed = [
-        f"{int(onedata[0])} {onedata[1]}/{onedata[2]}"
+        f"{int(onedata[0])} {onedata[1]} ({onedata[2]})"
         for onedata in top4.values.tolist()
     ]
 
     judge_names = ["KAZUKIYO", "KEIN", "HIRO", "SU→"]
-    guest_names = ["Mei/タイ", "Mei/大阪", "Juaena", "SAKI"]
+    guest_names = [f"Mei{sep_str}タイ", f"Mei{sep_str}大阪", "Juaena", "SAKI"]
 
     # concat top4 and guests
     top4_guests_list = []
@@ -41,9 +42,6 @@ def outputtext(groups, top4):
             )
         )
 
-    # pre-process on groups
-    # audition_number, name, represent -> audition_number+"space"+name/represent
-
     group_list = []
     for i, group in enumerate(groups):
         one_group = pd.DataFrame(
@@ -53,7 +51,7 @@ def outputtext(groups, top4):
                 2: group.apply(
                     lambda x: f"{x['name']}"
                     if pd.isna(x["represent"])
-                    else f"{x['name']}/{x['represent']}",
+                    else f"{x['name']}{sep_str}({x['represent']})",
                     axis=1,
                 ),
             }
@@ -66,7 +64,7 @@ def outputtext(groups, top4):
         one_output = pd.concat((top4_guests_list[i], group), axis=0).reset_index(
             drop=True
         )
-        one_output.columns = ["audition_number", "space", "name/represent"]
+        one_output.columns = ["audition_number", "space", f"name{sep_str}represent"]
         output_list.append(one_output)
 
     # display text in capyable format
