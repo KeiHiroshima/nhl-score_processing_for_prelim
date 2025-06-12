@@ -184,8 +184,15 @@ def get_zip(groups):
                     group = group.drop(columns="space").values.tolist()
 
                     for i, row in enumerate(group):
-                        if i < 2:  # either judge or guest/top4
+                        if i == 0:  # judge
                             f_all.write(f"{row[0]} {row[1]}\n")
+                        elif i == 1:  # guest / top 4
+                            if row[1].split(" ")[0].isdecimal():
+                                # remove audition number
+                                row1_to_write = " ".join(row[1].split(" ")[1:])
+                            else:
+                                row1_to_write = row[1]
+                            f_all.write(f"{row[0]} {row1_to_write}\n")
                         else:
                             f_all.write(f"{row[1]}\n")
 
