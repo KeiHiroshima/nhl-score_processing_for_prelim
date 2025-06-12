@@ -178,29 +178,27 @@ def get_zip(groups):
                 z.write(f"group_{group_names[i]}.txt")
 
             # output altogether
-            with open("groups.txt", "w") as f_all:
+            with open("groups_wo_audition_number.txt", "w") as f_all:
                 for i, group in enumerate(groups):
                     f_all.write(f"Group {group_names[i]}\n")
-
                     group = group.drop(columns="space").values.tolist()
-                    # group_txt = group.to_string(index=False, header=False)
-                    # format "audition_number name represent"
+
                     for i, row in enumerate(group):
-                        if i > 1 and int(row[0]) < 100:
-                            f_all.write(f"{row[0]}  {row[1]}\n")
-                        else:
+                        if i < 2:  # either judge or guest/top4
                             f_all.write(f"{row[0]} {row[1]}\n")
+                        else:
+                            f_all.write(f"{row[1]}\n")
 
                     f_all.write("\n")
             # add to zip
-            z.write("groups.txt")
+            z.write("groups_wo_audition_number.txt")
 
         buffer.seek(0)
 
         st.download_button(
             label="Download groups csv files",
             data=buffer.getvalue(),
-            file_name="groups.zip",
+            file_name="groups_for_cypher.zip",
             mime="application/zip",
         )
 
