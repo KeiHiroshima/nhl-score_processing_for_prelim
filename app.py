@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -6,7 +5,6 @@ from main import process, top36
 from makegroup import split_random
 from outputtext import get_zip, outputtext
 
-# グローバル変数
 uploaded_files = []
 
 # init session state: num_entry, history, groups
@@ -19,8 +17,7 @@ if "groups" not in st.session_state:
 if "top4" not in st.session_state:
     st.session_state["top4"] = []
 
-# set random seed randomly
-random_seed = np.random.randint(1000)
+random_seed = 42
 
 st.title("Processing 1st prelim and grouping to 8")
 
@@ -38,12 +35,8 @@ if enterylist_uploaded:
     entrylist = pd.read_csv(
         enterylist_uploaded, header=None, nrows=st.session_state["num_entry"]
     )
-    # set column names
-    col_names = ["audition_number", "name", "represent"]
-    entrylist.columns = col_names
+    entrylist.columns = ["audition_number", "name", "represent"]
 
-    # dtype of audition_number -> int
-    # entrylist["audition_number"] = entrylist["audition_number"].astype(int)
 
 # upload score sheets
 uploaded_file = st.file_uploader(
@@ -84,32 +77,18 @@ if uploaded_files:
     scores_processed = process(scores, name_list)
 
     # get top36
-    players_top4, players_top5to36, players_top5to36_sorted = top36(scores_processed)
-
-    # display top4
-    st.write("### Top 4")
-    st.write(players_top4)
-
-    # display top5to36
-    st.write("### Top 5 to 36")
-    st.write(players_top5to36)
-
-    # output files
-    # outputfiles(players_top4, players_top5to36, players_top5to36_sorted)
+    players_top4, players_top5to36 = top36(scores_processed)
 
     # save to session state
     st.session_state["top4"] = players_top4
 
 st.write("## Grouping to 8 groups")
 
-# グループ分けの実行
 if st.button("Random 8 groups"):
     groups = split_random(players_top5to36, random_seed)
 
-    # get_zip(groups)
     output_list = outputtext(groups, st.session_state["top4"])
 
-    # 履歴に追加
     history = st.session_state.get("history", [])
     history.append(output_list)
 
@@ -121,11 +100,8 @@ if st.button("Random 8 groups"):
 st.write("### Logs")
 
 if len(st.session_state["history"]) > 1:
-    # display history
-    st.write("Display history")
     history = st.session_state["history"]
     st.write(f"{len(history)} logs found")
-    # st.write(len(history[0]))
 
     index = st.slider("Select history", 0, len(history) - 1, 0)
     st.session_state["index"] = index
@@ -134,4 +110,3 @@ if len(st.session_state["history"]) > 1:
     if st.button("Looks good to this output?"):
         groups = history[index]
         get_zip(groups)
-        # outputtext(groups, st.session_state["top4"])

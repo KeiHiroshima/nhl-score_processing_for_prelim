@@ -35,10 +35,6 @@ def process(scores, judges):
     scores_mean = scores[judges].mean(axis=0)
     scores_std = scores[judges].std(axis=0)
 
-    # st.write(judges)
-    # st.write(scores_mean)
-    # st.write(scores_std)
-
     for judge in judges:
         scores_processed.loc[:, judge] = (
             scores.loc[:, judge] - scores_mean.loc[judge]
@@ -49,29 +45,48 @@ def process(scores, judges):
     return scores_processed
 
 
-def top36(scores_processed):
-    scores_des = scores_processed.sort_values(by="sum", ascending=False)
+def manual_formatting(df):
+    """
+    Format the 'represent' column in the DataFrame.
+    """
+    df_processed = df.copy()
 
-    col_names = ["audition_number", "name", "represent"]
+    with st.form("formatting_form"):
+        st.write("### Formatting represent column")
+        for i, row in df_processed.iterrows():
+            if not pd.isna(row["represent"]):
+                df_processed.at[i, "represent"] = st.text_input(
+                    row["name"], value=row["represent"], key=f"represent_{i}"
+                )
+
+        st.form_submit_button("update represent")
+
+    return df_processed
+
+
+def top36(scores_processed):
+    scores_des = scores_processed.sort_values(by="sum", ascending=False).reset_index(
+        drop=True
+    )
+    scores_des.index += 1  # start from 1
     st.write("### Results of 1st prelim")
     st.write(scores_des)
 
-    # players_top36 = scores_des[['No', 'name', 'Represent']].iloc[:36]
-    # players_top36 = scores_des.iloc[:36]
-    # st.write("### Top 36")
-    # st.write(players_top36)
+    col_names = ["audition_number", "name", "represent"]
+    players_top36 = scores_des.iloc[:36][col_names].copy()
 
-    players_top4 = (
-        scores_des[col_names].iloc[:4].sort_values(by="audition_number", ascending=True)
-    )
+    players_top36_formatted_rep = manual_formatting(players_top36)
 
-    players_top5to36 = (
-        scores_des[col_names].iloc[4:36]
-        # .sort_values(by="No", ascending=True)
-    )
-    players_top5to36_sorted = players_top5to36.copy().sort_values(
+    players_top4 = players_top36_formatted_rep.iloc[:4].sort_values(
         by="audition_number", ascending=True
     )
+    players_top5to36 = players_top36_formatted_rep.iloc[4:36]
+
+    st.write("### Top 4")
+    st.write(players_top4)
+
+    st.write("### Top 5 to 36")
+    st.write(players_top5to36.copy().sort_values(by="audition_number", ascending=True))
 
     # download button for score_des.csv
     st.download_button(
@@ -81,7 +96,7 @@ def top36(scores_processed):
         mime="text/csv",
     )
 
-    return players_top4, players_top5to36, players_top5to36_sorted
+    return players_top4, players_top5to36
 
 
 def outputfiles_local(
@@ -136,21 +151,31 @@ def get_zip(groups):
             ""  # output in each group
             for i, group in enumerate(groups):
                 group = group.drop(columns="space")  # drop " " column
-                group_csv = group.to_csv(index=False, header=False, sep=" ")
 
-                """
-                with open(f"group_{i+1}.txt", "w") as f:
-                    for i, row in enumerate(group):
-                        if i > 1 and int(row[0]) < 100:
-                            f.write(f"{row[0]}  {row[1]}\n")
-                        else:
-                            f.write(f"{row[0]} {row[1]}\n")
+                with open(f"group_{group_names[i]}.txt", "w") as f:
+                    # for i, row in enumerate(group):
+                    for index in range(group.shape[0]):
+                        row = group.iloc[index]
 
-                # z.write(f"group_{i+1}.txt")
-                # z.writestr(f"group_{i+1}.txt", open(f"group_{i+1}.txt").read())
-                """
+                        if (
+                            type(row["audition_number"]) is not int
+                            or row["audition_number"] > 99
+                        ):
+                            f.write(
+                                f"{row['audition_number']} {row['name represent']}\n"
+                            )
+                        elif row["audition_number"] < 10:
+                            f.write(
+                                f"{row['audition_number']}   {row['name represent']}\n"
+                            )
+                        elif (
+                            row["audition_number"] > 9 and row["audition_number"] < 100
+                        ):
+                            f.write(
+                                f"{row['audition_number']}  {row['name represent']}\n"
+                            )
 
-                z.writestr(f"group_{group_names[i]}.txt", group_csv)
+                z.write(f"group_{group_names[i]}.txt")
 
             # output altogether
             with open("groups.txt", "w") as f_all:
