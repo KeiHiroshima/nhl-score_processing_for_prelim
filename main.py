@@ -77,9 +77,9 @@ def top36(scores_processed):
 
     players_top36_formatted_rep = manual_formatting(players_top36)
 
-    players_top4 = players_top36_formatted_rep.iloc[:4].sort_values(
-        by="audition_number", ascending=True
-    )
+    players_top4 = players_top36_formatted_rep.iloc[:4]
+    # sort_values(by="audition_number", ascending=True)
+
     players_top5to36 = players_top36_formatted_rep.iloc[4:36]
 
     st.write("### Top 4")
@@ -152,7 +152,7 @@ def get_zip(groups):
             for i, group in enumerate(groups):
                 group = group.drop(columns="space")  # drop " " column
 
-                with open(f"group_{group_names[i]}.txt", "w") as f:
+                with open(f"{group_names[i]}_circle.txt", "w") as f:
                     # for i, row in enumerate(group):
                     for index in range(group.shape[0]):
                         row = group.iloc[index]
@@ -175,32 +175,37 @@ def get_zip(groups):
                                 f"{row['audition_number']}  {row['name represent']}\n"
                             )
 
-                z.write(f"group_{group_names[i]}.txt")
+                z.write(f"{group_names[i]}_circle.txt")
 
             # output altogether
-            with open("groups.txt", "w") as f_all:
+            with open("circles_wo_audition_number.txt", "w") as f_all:
                 for i, group in enumerate(groups):
-                    f_all.write(f"Group {group_names[i]}\n")
-
+                    f_all.write(f"{group_names[i]} Circle\n")
                     group = group.drop(columns="space").values.tolist()
-                    # group_txt = group.to_string(index=False, header=False)
-                    # format "audition_number name represent"
+
                     for i, row in enumerate(group):
-                        if i > 1 and int(row[0]) < 100:
-                            f_all.write(f"{row[0]}  {row[1]}\n")
-                        else:
+                        if i == 0:  # judge
                             f_all.write(f"{row[0]} {row[1]}\n")
+                        elif i == 1:  # guest / top 4
+                            if row[1].split(" ")[0].isdecimal():
+                                # remove audition number
+                                row1_to_write = " ".join(row[1].split(" ")[1:])
+                            else:
+                                row1_to_write = row[1]
+                            f_all.write(f"{row[0]} {row1_to_write}\n")
+                        else:
+                            f_all.write(f"{row[1]}\n")
 
                     f_all.write("\n")
             # add to zip
-            z.write("groups.txt")
+            z.write("circles_wo_audition_number.txt")
 
         buffer.seek(0)
 
         st.download_button(
             label="Download groups csv files",
             data=buffer.getvalue(),
-            file_name="groups.zip",
+            file_name="groups_for_cypher.zip",
             mime="application/zip",
         )
 

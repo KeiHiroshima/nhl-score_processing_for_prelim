@@ -11,9 +11,15 @@ def outputtext(groups, top4):
         f"{int(onedata[0])} {onedata[1]} ({onedata[2]})"
         for onedata in top4.values.tolist()
     ]
+    top4_order_to_cypher = [3, 2, 4, 1]  # not index
 
-    judge_names = ["KAZUKIYO", "KEIN", "HIRO", "SU→"]
-    guest_names = [f"Mei{sep_str}タイ", f"Mei{sep_str}大阪", "Juaena", "SAKI"]
+    judge_names = ["HIRO", "Masae", "KENJI", "MOTOKI"]
+    guest_names = [
+        f"Torch{sep_str}(Cracker)",
+        f"NUE{sep_str}(Natural Movementz)",
+        f"SINVY{sep_str}(Seren:D)",
+        f"minami{sep_str}(soil)",
+    ]
 
     # concat top4 and guests
     top4_guests_list = []
@@ -23,15 +29,20 @@ def outputtext(groups, top4):
     for i in range(num_groups):
         if i >= len(judge_names):
             judge_index = i - len(judge_names)
+            judge_index += 1 if judge_index % 2 == 0 else -1  # switch latter half
         else:
             judge_index = i
 
-        if i % 2 == 0:  # pick guest
+        if i % 2 == 0:  # pick top4 in odd circle
+            guest_row = [
+                "GUEST:",
+                " ",
+                top4_processed[top4_order_to_cypher[top4_index] - 1],
+            ]
+            top4_index += 1
+        else:  # pick guest in even circle
             guest_row = ["GUEST:", " ", guest_names[guest_index]]
             guest_index += 1
-        else:
-            guest_row = ["GUEST:", " ", top4_processed[top4_index]]
-            top4_index += 1
 
         top4_guests_list.append(
             pd.DataFrame(
@@ -74,7 +85,10 @@ def outputtext(groups, top4):
     for i, output in enumerate(output_list):
         # drop " " column
         output = output.drop(columns="space")
+
         st.write(f"#### {group_names[i]} circle")
+
+        st.write(f"#### Circle {group_names[i]}")
         st.write(output)
 
     get_zip(output_list)

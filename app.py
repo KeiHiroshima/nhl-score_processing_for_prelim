@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import streamlit as st
 
@@ -17,7 +19,7 @@ if "groups" not in st.session_state:
 if "top4" not in st.session_state:
     st.session_state["top4"] = []
 
-random_seed = 42
+random_seed = round(time.time() % 1000)  # random seed for grouping
 
 st.title("Processing 1st prelim and grouping to 8")
 
@@ -79,9 +81,9 @@ if uploaded_files:
 
     st.session_state["top4"] = players_top4
 
-st.write("## Grouping to 8 groups")
+st.write("## Grouping to 8")
 
-if st.button("Random 8 groups"):
+if st.button("Random grouong to 8"):
     groups = split_random(players_top5to36, random_seed)
 
     output_list = outputtext(groups, st.session_state["top4"])
@@ -90,6 +92,8 @@ if st.button("Random 8 groups"):
     history.append(output_list)
 
     st.session_state["history"] = history
+
+    st.session_state["history"].append(output_list)
 
 
 st.write("### Logs")
@@ -100,6 +104,7 @@ if len(st.session_state["history"]) > 1:
 
     index = st.slider("Select history", 0, len(history) - 1, 0)
     st.session_state["index"] = index
+
     # st.write(history[index])
     outputtext_history(history[index])
 
