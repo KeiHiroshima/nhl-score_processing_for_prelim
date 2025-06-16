@@ -86,11 +86,23 @@ def outputtext(groups, top4=None, flag_history=False):
     st.write("### Groups for 2nd prelim")
     group_names = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
-    for i, output in enumerate(output_list):
-        output = output.drop(columns="space")
+    col1, col2 = st.columns(2)
+    with col1:
+        # print even circles
+        for i in range(0, len(output_list), 2):
+            output = output_list[i]
+            output = output.drop(columns="space")
 
-        st.write(f"#### {group_names[i]} circle")
-        st.write(output)
+            st.write(f"#### {group_names[i]} circle")
+            st.write(output)
+    with col2:
+        # print odd circles
+        for i in range(1, len(output_list), 2):
+            output = output_list[i]
+            output = output.drop(columns="space")
+
+            st.write(f"#### {group_names[i]} circle")
+            st.write(output)
 
     get_zip(output_list)
 
