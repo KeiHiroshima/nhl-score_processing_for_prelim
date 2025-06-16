@@ -5,7 +5,7 @@ import streamlit as st
 
 from main import process, top36
 from makegroup import split_random
-from outputtext import get_zip, outputtext, outputtext_history
+from outputtext import get_zip, outputtext
 
 uploaded_files = []
 
@@ -88,11 +88,6 @@ if st.button("Random grouong to 8"):
 
     output_list = outputtext(groups, st.session_state["top4"])
 
-    history = st.session_state.get("history", [])
-    history.append(output_list)
-
-    st.session_state["history"] = history
-
     st.session_state["history"].append(output_list)
 
 
@@ -106,7 +101,7 @@ if len(st.session_state["history"]) > 1:
     st.session_state["index"] = index
 
     # st.write(history[index])
-    outputtext_history(history[index])
+    outputtext(st.session_state["history"][index], flag_history=True)
 
     if st.button("Looks good to this output?"):
         groups = history[index]
