@@ -3,7 +3,7 @@ import streamlit as st
 
 from main import process, top36
 from makegroup import split_random
-from outputtext import get_zip, outputtext
+from outputtext import get_zip, outputtext, outputtext_history
 
 uploaded_files = []
 
@@ -73,13 +73,10 @@ if uploaded_file:
 if uploaded_files:
     name_list = name_list[-4:]  # judges name
 
-    # processing
     scores_processed = process(scores, name_list)
 
-    # get top36
     players_top4, players_top5to36 = top36(scores_processed)
 
-    # save to session state
     st.session_state["top4"] = players_top4
 
 st.write("## Grouping to 8 groups")
@@ -92,8 +89,6 @@ if st.button("Random 8 groups"):
     history = st.session_state.get("history", [])
     history.append(output_list)
 
-    # save to session state
-    # st.session_state["groups"] = groups
     st.session_state["history"] = history
 
 
@@ -105,7 +100,8 @@ if len(st.session_state["history"]) > 1:
 
     index = st.slider("Select history", 0, len(history) - 1, 0)
     st.session_state["index"] = index
-    st.write(history[index])
+    # st.write(history[index])
+    outputtext_history(history[index])
 
     if st.button("Looks good to this output?"):
         groups = history[index]

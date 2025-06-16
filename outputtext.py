@@ -74,12 +74,23 @@ def outputtext(groups, top4):
     for i, output in enumerate(output_list):
         # drop " " column
         output = output.drop(columns="space")
-        st.write(f"#### Group {group_names[i]}")
+        st.write(f"#### {group_names[i]} circle")
         st.write(output)
 
     get_zip(output_list)
 
     return output_list
+
+
+def outputtext_history(groups):
+    # display text in capyable format
+    st.write("### Groups for 2nd prelim")
+    group_names = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+    for i, output in enumerate(groups):
+        # drop " " column
+        st.write(f"#### {group_names[i]} circle")
+        st.write(output)
 
 
 def main():
