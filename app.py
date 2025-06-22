@@ -3,9 +3,9 @@ import time
 import pandas as pd
 import streamlit as st
 
-from main import process, top36
 from makegroup import split_random
-from outputtext import get_zip, outputtext
+from outputtext import outputtext
+from utils import process, top36
 
 uploaded_files = []
 
@@ -100,9 +100,4 @@ if len(st.session_state["history"]) > 1:
     index = st.slider("Select history", 0, len(history) - 1, 0)
     st.session_state["index"] = index
 
-    # st.write(history[index])
     outputtext(st.session_state["history"][index], flag_history=True)
-
-    if st.button("Looks good to this output?"):
-        groups = history[index]
-        get_zip(groups)

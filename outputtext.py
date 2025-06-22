@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from main import get_zip
+from utils import get_zip
 
 
 def outputtext(groups, top4=None, flag_history=False):
@@ -104,6 +104,7 @@ def outputtext(groups, top4=None, flag_history=False):
             st.write(f"#### {group_names[i]} circle")
             st.write(output)
 
+    # if not flag_history or (flag_history and st.button("Looks good to this output?")):
     get_zip(output_list)
 
     return output_list

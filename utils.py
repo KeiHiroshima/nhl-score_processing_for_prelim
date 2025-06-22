@@ -1,29 +1,9 @@
 import io
-import os
+import random
 import zipfile
 
 import pandas as pd
 import streamlit as st
-
-
-def readcsv(folder_path, file_names):
-    exp = ".csv"
-
-    for i, file_name in enumerate(file_names):
-        file_name += exp
-        file_path = os.path.join(folder_path, file_name)
-        data_one = pd.read_csv(file_path)
-
-        if i == 0:
-            scores = data_one
-        else:
-            scores = pd.concat((scores, data_one.iloc[:, 3]), axis=1)
-
-    """
-    scores.columns = scores.iloc[0]
-    scores = scores.drop(0)"""
-
-    return scores
 
 
 def process(scores, judges):
@@ -99,51 +79,6 @@ def top36(scores_processed):
     return players_top4, players_top5to36
 
 
-def outputfiles_local(
-    folder_path, players_top4, players_top5to36, players_top5to36_sorted
-):
-    col_names = ["audition_number", "name", "represent"]
-    players_top4[col_names].to_csv(
-        os.path.join(folder_path, "top4.csv"), index=False, sep=", "
-    )
-    players_top5to36[col_names].to_csv(
-        os.path.join(folder_path, "top5to36.csv"), index=False, sep=", "
-    )
-    players_top5to36_sorted[col_names].to_csv(
-        os.path.join(folder_path, "top5to36_sorted.csv"), index=False, sep=","
-    )
-
-
-def outputfiles(players_top4, players_top5to36, players_top5to36_sorted):
-    col_names = ["audition_number", "name", "represent"]
-    # dataframes to csv
-    top4_csv = players_top4[col_names].to_csv(index=False, sep=", ")
-    # top5to36_csv = players_top5to36[["No", "name", "Represent"]].to_csv(index=False)
-    top5to36_sorted_csv = players_top5to36_sorted[col_names].to_csv(
-        index=False, sep=", "
-    )
-
-    # make ZipFile
-    with io.BytesIO() as buffer:
-        with zipfile.ZipFile(buffer, "w") as z:
-            z.writestr("top4.csv", top4_csv)
-            # z.writestr("top5to36.csv", top5to36_csv)
-            z.writestr("top5to36_sorted.csv", top5to36_sorted_csv)
-
-        buffer.seek(0)
-
-        # st.write("### file name list")
-        # st.write(z.namelist())
-
-        # download button
-        st.download_button(
-            label="Download top4.csv, top5to36.csv",
-            data=buffer.getvalue(),  # buffer.getvalue()でzipファイルのバイナリデータを取得
-            file_name="top36.zip",
-            mime="application/zip",
-        )
-
-
 def get_zip(groups):
     group_names = ["A", "B", "C", "D", "E", "F", "G", "H"]
     with io.BytesIO() as buffer:
@@ -207,19 +142,5 @@ def get_zip(groups):
             data=buffer.getvalue(),
             file_name="groups_for_cypher.zip",
             mime="application/zip",
+            key=f"download_groups_zip_{random.randint(0, 999)}",  # random key to avoid caching
         )
-
-
-if __name__ == "__main__":
-    folder_path = "/Users/te_keiero/PycharmProjects/NHL-score-prelim"
-    judge_names = ["Judge1", "Judge2", "Judge3", "Judge4"]
-
-    scores = readcsv(folder_path, judge_names)
-
-    scores_processed = process(scores, judge_names)
-
-    players_top4, players_top5to36, players_top5to36_sorted = top36(scores_processed)
-
-    outputfiles_local(
-        folder_path, players_top4, players_top5to36, players_top5to36_sorted
-    )
