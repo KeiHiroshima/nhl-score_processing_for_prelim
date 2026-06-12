@@ -9,15 +9,21 @@ Player ranks map to text_input keys 1-based: rank r -> key f"represent_{r}".
 Ranks 1-4 are top4; ranks 5-36 are top5to36 (the ones that land in groups).
 """
 
+from pathlib import Path
+
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from tests.conftest import build_scores
+from factories import build_scores
+
+# Resolve app.py relative to this test file so the path is independent of the
+# working directory and of AppTest's caller-relative resolution.
+APP_PATH = str(Path(__file__).resolve().parent.parent / "app.py")
 
 
 def _fresh_app():
     scores, judges = build_scores(n=36, n_judges=4, seed=0)
-    at = AppTest.from_file("app.py", default_timeout=30)
+    at = AppTest.from_file(APP_PATH, default_timeout=30)
     at.session_state["scores"] = scores
     at.session_state["judge_names"] = judges
     at.run()
@@ -139,7 +145,7 @@ def test_constant_judge_shows_warning_in_app():
     scores, judges = build_scores(n=36, n_judges=4, seed=0)
     scores[judges[0]] = 80.0  # first judge scores everyone identically
 
-    at = AppTest.from_file("app.py", default_timeout=30)
+    at = AppTest.from_file(APP_PATH, default_timeout=30)
     at.session_state["scores"] = scores
     at.session_state["judge_names"] = judges
     at.run()
