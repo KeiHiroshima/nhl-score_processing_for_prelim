@@ -9,20 +9,20 @@ def outputtext(groups, top4=None, flag_history=False):
         sep_str = " "
         # audition_number, name, represent -> audition_number+'space'+name/represent
         top4_processed = [
-            f"{int(onedata[0])} {onedata[1]} ({onedata[2]})"
+            f"{onedata[1]} ({int(onedata[0])}, {onedata[2]})" if not pd.isna(onedata[2]) else f"{onedata[1]} ({int(onedata[0])})"
             for onedata in top4.values.tolist()
         ]
         top4_order_to_cypher = [3, 2, 4, 1]  # not index
 
-        judge_names = ["HIRO", "Masae", "KENJI", "MOTOKI"]
+        judge_names = ["HIRO", "JAE-SANG", "Take", "SINVY"]
         guest_names = [
-            f"Torch{sep_str}(Cracker)",
-            f"NUE{sep_str}(Natural Movementz)",
-            f"SINVY{sep_str}(Seren:D)",
-            f"minami{sep_str}(soil)",
+            f"Kate",
+            f"Bronco",
+            f"MARCIA",
+            f"YOUTEE",
         ]
 
-        # concat top4 and guests
+        # build judge/guest rows as final single-line strings per circle
         top4_guests_list = []
 
         num_groups = 8
@@ -34,49 +34,40 @@ def outputtext(groups, top4=None, flag_history=False):
             else:
                 judge_index = i
 
+            judge_line = f"JUDGE: {judge_names[judge_index]}"
+
             if i % 2 == 0:  # pick top4 in odd circle
-                guest_row = [
-                    "GUEST:",
-                    " ",
-                    top4_processed[top4_order_to_cypher[top4_index] - 1],
-                ]
+                guest_line = (
+                    f"GUEST: {top4_processed[top4_order_to_cypher[top4_index] - 1]}"
+                )
                 top4_index += 1
             else:  # pick guest in even circle
-                guest_row = ["GUEST:", " ", guest_names[guest_index]]
+                guest_line = f"GUEST: {guest_names[guest_index]}"
                 guest_index += 1
 
-            top4_guests_list.append(
-                pd.DataFrame(
-                    [
-                        ["JUDGE:", " ", judge_names[judge_index]],
-                        guest_row,
-                    ]
-                )
-            )
+            top4_guests_list.append(pd.DataFrame({"line": [judge_line, guest_line]}))
 
+        # build player rows as final single-line strings
         group_list = []
         for i, group in enumerate(groups):
             one_group = pd.DataFrame(
                 {
-                    0: group["audition_number"].astype(int),
-                    1: " ",
-                    2: group.apply(
-                        lambda x: f"{x['name']}"
+                    "line": group.apply(
+                        lambda x: f"{x['name']}{sep_str}({int(x['audition_number'])})"
                         if pd.isna(x["represent"])
-                        else f"{x['name']}{sep_str}({x['represent']})",
+                        else f"{x['name']}{sep_str}({int(x['audition_number'])}, {x['represent']})",
                         axis=1,
                     ),
                 }
             )
             group_list.append(one_group)
 
-        # concat top4s and groups
+        # concat judge/guest rows and player rows into one "line" column per circle
         output_list = []
         for i, group in enumerate(group_list):
             one_output = pd.concat((top4_guests_list[i], group), axis=0).reset_index(
                 drop=True
             )
-            one_output.columns = ["audition_number", "space", f"name{sep_str}represent"]
             output_list.append(one_output)
 
     else:
@@ -91,7 +82,6 @@ def outputtext(groups, top4=None, flag_history=False):
         # print even circles
         for i in range(0, len(output_list), 2):
             output = output_list[i]
-            output = output.drop(columns="space")
 
             st.write(f"#### {group_names[i]} circle")
             st.write(output)
@@ -99,7 +89,6 @@ def outputtext(groups, top4=None, flag_history=False):
         # print odd circles
         for i in range(1, len(output_list), 2):
             output = output_list[i]
-            output = output.drop(columns="space")
 
             st.write(f"#### {group_names[i]} circle")
             st.write(output)

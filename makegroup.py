@@ -5,7 +5,6 @@ import pandas as pd
 
 
 def split_random(df, seed=42):
-    # ランダムシードを固定
     np.random.seed(seed)
 
     # データフレームをランダムに8つのグループに分割
@@ -25,7 +24,6 @@ def split_random(df, seed=42):
 
 
 def split_even(df, seed=42):
-    # ランダムシードを固定
     np.random.seed(seed)
 
     # データフレームをランダムに8つのグループに分割
@@ -78,6 +76,5 @@ def main(data_path):
 
 if __name__ == "__main__":
     data_path = os.getcwd()
-    # print(data_path)
 
     main(os.path.join(data_path, "outputs_from_script"))

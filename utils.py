@@ -83,57 +83,18 @@ def get_zip(groups):
     group_names = ["A", "B", "C", "D", "E", "F", "G", "H"]
     with io.BytesIO() as buffer:
         with zipfile.ZipFile(buffer, "w") as z:
-            ""  # output in each group
+            # output each circle into its own file (in-memory, no temp files on disk)
             for i, group in enumerate(groups):
-                group = group.drop(columns="space")  # drop " " column
+                content = "".join(f"{line}\n" for line in group["line"].tolist())
+                z.writestr(f"{group_names[i]}_circle.txt", content)
 
-                with open(f"{group_names[i]}_circle.txt", "w") as f:
-                    # for i, row in enumerate(group):
-                    for index in range(group.shape[0]):
-                        row = group.iloc[index]
-
-                        if (
-                            type(row["audition_number"]) is not int
-                            or row["audition_number"] > 99
-                        ):
-                            f.write(
-                                f"{row['audition_number']} {row['name represent']}\n"
-                            )
-                        elif row["audition_number"] < 10:
-                            f.write(
-                                f"{row['audition_number']}   {row['name represent']}\n"
-                            )
-                        elif (
-                            row["audition_number"] > 9 and row["audition_number"] < 100
-                        ):
-                            f.write(
-                                f"{row['audition_number']}  {row['name represent']}\n"
-                            )
-
-                z.write(f"{group_names[i]}_circle.txt")
-
-            # output altogether
-            with open("circles_wo_audition_number.txt", "w") as f_all:
-                for i, group in enumerate(groups):
-                    f_all.write(f"{group_names[i]} Circle\n")
-                    group = group.drop(columns="space").values.tolist()
-
-                    for i, row in enumerate(group):
-                        if i == 0:  # judge
-                            f_all.write(f"{row[0]} {row[1]}\n")
-                        elif i == 1:  # guest / top 4
-                            if row[1].split(" ")[0].isdecimal():
-                                # remove audition number
-                                row1_to_write = " ".join(row[1].split(" ")[1:])
-                            else:
-                                row1_to_write = row[1]
-                            f_all.write(f"{row[0]} {row1_to_write}\n")
-                        else:
-                            f_all.write(f"{row[1]}\n")
-
-                    f_all.write("\n")
-            # add to zip
-            z.write("circles_wo_audition_number.txt")
+            # output all circles altogether (in-memory, no temp files on disk)
+            all_parts = []
+            for i, group in enumerate(groups):
+                all_parts.append(f"{group_names[i]} Circle\n")
+                all_parts.extend(f"{line}\n" for line in group["line"].tolist())
+                all_parts.append("\n")
+            z.writestr("circles_wo_audition_number.txt", "".join(all_parts))
 
         buffer.seek(0)
 

@@ -19,7 +19,7 @@ if "groups" not in st.session_state:
 if "top4" not in st.session_state:
     st.session_state["top4"] = []
 
-random_seed = round(time.time() % 1000)  # random seed for grouping
+random_seed = int(time.time())  # use current time as random seed for grouping
 
 st.title("Processing 1st prelim and grouping to 8")
 
@@ -83,7 +83,7 @@ if uploaded_files:
 
 st.write("## Grouping to 8")
 
-if st.button("Random grouong to 8"):
+if st.button("Random grouping to 8"):
     groups = split_random(players_top5to36, random_seed)
 
     output_list = outputtext(groups, st.session_state["top4"])
