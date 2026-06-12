@@ -1,3 +1,6 @@
+outputs/
+testdata/
+
 *.txt
 .idea/
 .DS_Store

@@ -6,9 +6,23 @@ import pandas as pd
 import streamlit as st
 
 
+def constant_judges(scores, judges):
+    """Judges whose scores have zero variance (std == 0) across all players.
+
+    Such a judge cannot be z-score normalized (division by zero). They are
+    treated as neutral (contribute 0 to every player's sum), so the caller can
+    surface a warning.
+    """
+    scores_std = scores[judges].std(axis=0)
+    return [judge for judge in judges if scores_std.loc[judge] == 0]
+
+
 def process(scores, judges):
     """
-    (score - mean) / deviation
+    (score - mean) / deviation, per judge.
+
+    If a judge gave everyone the same score (std == 0) the z-score is undefined,
+    so that judge's normalized column is set to 0 (neutral) instead of NaN/inf.
     """
     scores_processed = scores[["audition_number", "name", "represent"]].copy()
 
@@ -16,9 +30,13 @@ def process(scores, judges):
     scores_std = scores[judges].std(axis=0)
 
     for judge in judges:
-        scores_processed.loc[:, judge] = (
-            scores.loc[:, judge] - scores_mean.loc[judge]
-        ) / scores_std.loc[judge]
+        if scores_std.loc[judge] == 0:
+            # constant judge -> undefined z-score -> disable (neutral 0)
+            scores_processed.loc[:, judge] = 0.0
+        else:
+            scores_processed.loc[:, judge] = (
+                scores.loc[:, judge] - scores_mean.loc[judge]
+            ) / scores_std.loc[judge]
 
     scores_processed["sum"] = scores_processed[judges].sum(axis=1)
 
@@ -44,16 +62,27 @@ def manual_formatting(df):
     return df_processed
 
 
-def top36(scores_processed):
+def compute_rankings(scores_processed):
+    """
+    Pure ranking logic (no Streamlit): sort by sum desc, 1-based index,
+    and slice the top 36 with display columns. Returns (scores_des, players_top36).
+    """
     scores_des = scores_processed.sort_values(by="sum", ascending=False).reset_index(
         drop=True
     )
     scores_des.index += 1  # start from 1
-    st.write("### Results of 1st prelim")
-    st.write(scores_des)
 
     col_names = ["audition_number", "name", "represent"]
     players_top36 = scores_des.iloc[:36][col_names].copy()
+
+    return scores_des, players_top36
+
+
+def top36(scores_processed):
+    scores_des, players_top36 = compute_rankings(scores_processed)
+
+    st.write("### Results of 1st prelim")
+    st.write(scores_des)
 
     players_top36_formatted_rep = manual_formatting(players_top36)
 
@@ -83,57 +112,18 @@ def get_zip(groups):
     group_names = ["A", "B", "C", "D", "E", "F", "G", "H"]
     with io.BytesIO() as buffer:
         with zipfile.ZipFile(buffer, "w") as z:
-            ""  # output in each group
+            # output each circle into its own file (in-memory, no temp files on disk)
             for i, group in enumerate(groups):
-                group = group.drop(columns="space")  # drop " " column
+                content = "".join(f"{line}\n" for line in group["line"].tolist())
+                z.writestr(f"{group_names[i]}_circle.txt", content)
 
-                with open(f"{group_names[i]}_circle.txt", "w") as f:
-                    # for i, row in enumerate(group):
-                    for index in range(group.shape[0]):
-                        row = group.iloc[index]
-
-                        if (
-                            type(row["audition_number"]) is not int
-                            or row["audition_number"] > 99
-                        ):
-                            f.write(
-                                f"{row['audition_number']} {row['name represent']}\n"
-                            )
-                        elif row["audition_number"] < 10:
-                            f.write(
-                                f"{row['audition_number']}   {row['name represent']}\n"
-                            )
-                        elif (
-                            row["audition_number"] > 9 and row["audition_number"] < 100
-                        ):
-                            f.write(
-                                f"{row['audition_number']}  {row['name represent']}\n"
-                            )
-
-                z.write(f"{group_names[i]}_circle.txt")
-
-            # output altogether
-            with open("circles_wo_audition_number.txt", "w") as f_all:
-                for i, group in enumerate(groups):
-                    f_all.write(f"{group_names[i]} Circle\n")
-                    group = group.drop(columns="space").values.tolist()
-
-                    for i, row in enumerate(group):
-                        if i == 0:  # judge
-                            f_all.write(f"{row[0]} {row[1]}\n")
-                        elif i == 1:  # guest / top 4
-                            if row[1].split(" ")[0].isdecimal():
-                                # remove audition number
-                                row1_to_write = " ".join(row[1].split(" ")[1:])
-                            else:
-                                row1_to_write = row[1]
-                            f_all.write(f"{row[0]} {row1_to_write}\n")
-                        else:
-                            f_all.write(f"{row[1]}\n")
-
-                    f_all.write("\n")
-            # add to zip
-            z.write("circles_wo_audition_number.txt")
+            # output all circles altogether (in-memory, no temp files on disk)
+            all_parts = []
+            for i, group in enumerate(groups):
+                all_parts.append(f"{group_names[i]} Circle\n")
+                all_parts.extend(f"{line}\n" for line in group["line"].tolist())
+                all_parts.append("\n")
+            z.writestr("circles_wo_audition_number.txt", "".join(all_parts))
 
         buffer.seek(0)
 
