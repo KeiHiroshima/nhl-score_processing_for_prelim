@@ -26,10 +26,10 @@ st.title("Processing 1st prelim and grouping to 8")
 # input total entry number to session state
 st.write("### Input total entry number")
 st.session_state["num_entry"] = st.number_input(
-    "Total entry number", min_value=0, value=254
+    "Total entry number", min_value=0, value=255
 )
 
-st.write("## Upload files to start ")
+st.write("### Upload files to start ")
 
 # upload entrylist
 enterylist_uploaded = st.file_uploader("Upload entrylist", type="csv")
